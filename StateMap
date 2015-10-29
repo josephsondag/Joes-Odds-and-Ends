@@ -1,0 +1,55 @@
+Option Private Module
+Public TerritoryList() As String
+Public TerritoryCount As Integer
+Option Compare Text
+
+Sub TerritoryReset()
+If MsgBox("Are you sure you want to reset territories to the below list? (I promise nothing catastrophic will happen)", vbYesNo) = vbNo Then Exit Sub
+
+'--------------Creating New Territory List
+Range("AC1:AC25").ClearContents
+
+ReDim TerritoryList(0)
+TerritoryCount = 0
+
+For j = 23 To 47
+    If Not IsEmpty(Cells(j, 10)) Then
+        TerritoryCount = TerritoryCount + 1
+        TerritoryList(UBound(TerritoryList)) = Cells(j, 10)
+        Cells(UBound(TerritoryList) + 1, 29) = Cells(j, 10)
+        
+        ReDim Preserve TerritoryList(UBound(TerritoryList) + 1)
+        Cells(j, 10).Interior.ColorIndex = UBound(TerritoryList) + 39
+    Else
+        Cells(j, 10).Interior.ColorIndex = 0
+    End If
+Next
+
+Cells(1, 30) = TerritoryCount
+
+'--------Coloring map and Territory Assignments (Territory List is now completely populated)
+Dim StatePick As String
+
+For k = 2 To 54
+    StatePick = Cells(k, 1)
+
+    Cells(k, 2).Interior.ColorIndex = 0
+    ActiveSheet.Shapes(StatePick).OLEFormat.Object.Interior.ColorIndex = 0
+   
+    For l = 0 To TerritoryCount - 1
+        If Cells(k, 2) = TerritoryList(l) Then
+            Cells(k, 2).Interior.ColorIndex = l + 40
+            ActiveSheet.Shapes(StatePick).OLEFormat.Object.Interior.ColorIndex = l + 40
+            Exit For
+        End If
+    Next
+Next
+
+'--------Stupid Color Correction for Stupid Michigan and Long island
+Range("B53:b54").Interior.Color = Range("B55").Interior.Color
+
+'--------Adding Dropdown List of New Territories to Cells
+Range("b2:b52").Validation.Delete
+  
+If TerritoryCount <> 0 Then
+    With Range("b2:b52")
